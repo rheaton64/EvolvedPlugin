@@ -13,7 +13,7 @@ import imageio
 import numpy as np
 
 # Create an agent
-agent = OpenAiAgent(model='gpt-4', api_key='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')
+agent = OpenAiAgent(model='gpt-4')
 
 def export_to_gif(frames: list[np.ndarray], output_gif_path: str = None) -> str:
     if output_gif_path is None:
