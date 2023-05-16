@@ -1,34 +1,42 @@
-import json
-
+import os
 import quart
 import quart_cors
 from quart import request
+from hfta import run_agent
+import cloudinary
+import cloudinary.uploader
 
 app = quart_cors.cors(quart.Quart(__name__), allow_origin="https://chat.openai.com")
 
-# Keep track of todo's. Does not persist if Python session is restarted.
-_TODOS = {}
+# DO NOT COMMIT THIS TO GITHUB
+cloudinary.config(
+  cloud_name= "agent-plugin",
+  api_key= "525496892125573",
+  api_secret= "Z2UaRxnIldX8-_NyLCf-rdjCLfk"
+)
 
-@app.post("/todos/<string:username>")
-async def add_todo(username):
-    request = await quart.request.get_json(force=True)
-    if username not in _TODOS:
-        _TODOS[username] = []
-    _TODOS[username].append(request["todo"])
-    return quart.Response(response='OK', status=200)
 
-@app.get("/todos/<string:username>")
-async def get_todos(username):
-    return quart.Response(response=json.dumps(_TODOS.get(username, [])), status=200)
+def upload_file(file_path):
+    _, extension = os.path.splitext(file_path)
+    extension = extension.lower()
+    resource_type = 'image'
+    if extension in ['.mp4', '.avi', '.mov', '.flv', '.wmv']:
+        resource_type = 'video'
+    elif extension in ['.wav', '.mp3', '.flac', '.aac', '.ogg']:
+        resource_type = 'video'  # Cloudinary treats audio as video
+    response = cloudinary.uploader.upload(file_path, resource_type=resource_type)
+    return response['url']
 
-@app.delete("/todos/<string:username>")
-async def delete_todo(username):
-    request = await quart.request.get_json(force=True)
-    todo_idx = request["todo_idx"]
-    # fail silently, it's a simple plugin
-    if 0 <= todo_idx < len(_TODOS[username]):
-        _TODOS[username].pop(todo_idx)
-    return quart.Response(response='OK', status=200)
+@app.post("/agents/hfta")
+async def agents_hfta():
+    request_data = await quart.request.get_json(force=True)
+    prompt = request_data["prompt"]
+    res = run_agent(prompt)
+    if res['output_type'] == 'text':
+        return quart.Response(response=res['output'], status=200)
+    elif res['output_type'] in ['image', 'video', 'audio']:
+        url = upload_file(res['output'])
+        return quart.jsonify({'url': url})
 
 @app.get("/logo.png")
 async def plugin_logo():
