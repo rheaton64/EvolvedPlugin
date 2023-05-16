@@ -11,8 +11,7 @@ app = quart_cors.cors(quart.Quart(__name__), allow_origin="https://chat.openai.c
 # DO NOT COMMIT THIS TO GITHUB
 cloudinary.config(
   cloud_name= "agent-plugin",
-  api_key= "525496892125573",
-  api_secret= "Z2UaRxnIldX8-_NyLCf-rdjCLfk"
+  api_key= "525496892125573"
 )
 
 
