@@ -13,7 +13,7 @@ import imageio
 import numpy as np
 
 # Create an agent
-agent = OpenAiAgent(model='gpt-4', api_key='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')
+agent = OpenAiAgent(model='gpt-4')
 
 def export_to_gif(frames: list[np.ndarray], output_gif_path: str = None) -> str:
     if output_gif_path is None:
@@ -41,20 +41,17 @@ def infer_output_type(output):
 
 def play_video(video):
     video_path = export_to_gif(video)
-    # vid = VideoFileClip(video_path)
-    # vid.preview()
     return video_path
 
 def display_image(image):
-    image.show()
-    image.save('output.png')
-    return 'output.png'
+    img_path = tempfile.NamedTemporaryFile(suffix=".png").name
+    image.save(img_path)
+    return img_path
 
 def play_audio(audio):
-    sf.write("output.wav", audio.numpy(), samplerate=16000)
-    audio = AudioSegment.from_file("output.wav", format="wav")
-    play(audio)
-    return 'output.wav'
+    audio_path = tempfile.NamedTemporaryFile(suffix=".wav").name
+    sf.write(audio_path, audio.numpy(), samplerate=16000)
+    return audio_path
 
 def run_agent(prompt) -> dict:
     output = agent.run(prompt)
