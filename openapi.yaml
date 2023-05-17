@@ -1,93 +1,45 @@
 openapi: 3.0.1
 info:
-  title: TODO Plugin
-  description: A plugin that allows the user to create and manage a TODO list using ChatGPT. If you do not know the user's username, ask them first before making queries to the plugin. Otherwise, use the username "global".
+  title: Evolved Plugin
+  description: A plugin that connects ChatGPT with other agents designed to perform a wide range of multimodal tasks. 
   version: 'v1'
 servers:
   - url: http://localhost:5003
 paths:
-  /todos/{username}:
-    get:
-      operationId: getTodos
-      summary: Get the list of todos
-      parameters:
-      - in: path
-        name: username
-        schema:
-            type: string
+  /agents/hfta:
+    post:
+      summary: |
+        Executes the HuggingFace Transformers Agents (HFTA) agent and returns the result.
+        This agent can be used to perform a wide range of multimodal tasks that can use HuggingFace Transformers models, and has conversational memory.
+        Can generate text, images, videos, and audio.
+      operationId: agents_hfta
+      requestBody:
         required: true
-        description: The name of the user.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: |
+                    The prompt for the HFTA agent. Should be a natural language prompt that commands the agent to perform a task.
+                    The agent has conversational memory and always has access to previous outputs. The prompt should never include the URL of an output file, and should reference previous outputs by name.
+                    For example, instead of saying "Generate a caption for this image: http://res.cloudinary.com/agent-plugin/image/upload/v1684280226/ry6uu6d8wjohrbte4lcv.png", where the link is to an image that was just generated, you should say "Generate a caption for the previously generated image".
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Operation successful.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getTodosResponse'
-    post:
-      operationId: addTodo
-      summary: Add a todo to the list
-      parameters:
-      - in: path
-        name: username
-        schema:
-            type: string
-        required: true
-        description: The name of the user.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/addTodoRequest'
-      responses:
-        "200":
-          description: OK
-    delete:
-      operationId: deleteTodo
-      summary: Delete a todo from the list
-      parameters:
-      - in: path
-        name: username
-        schema:
-            type: string
-        required: true
-        description: The name of the user.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/deleteTodoRequest'
-      responses:
-        "200":
-          description: OK
-
-components:
-  schemas:
-    getTodosResponse:
-      type: object
-      properties:
-        todos:
-          type: array
-          items:
-            type: string
-          description: The list of todos.
-    addTodoRequest:
-      type: object
-      required:
-      - todo
-      properties:
-        todo:
-          type: string
-          description: The todo to add to the list.
-          required: true
-    deleteTodoRequest:
-      type: object
-      required:
-      - todo_idx
-      properties:
-        todo_idx:
-          type: integer
-          description: The index of the todo to delete.
-          required: true
+                oneOf:
+                  - type: string
+                    description: The output text from the HFTA agent.
+                  - type: object
+                    properties:
+                      url:
+                        type: string
+                        description: |
+                          The URL of the output file (if the output is an image, video, or audio). 
+                          The URL is a direct link to the asset in question. 
+                          Should only be used to show the human what the AI has generated.

@@ -13,7 +13,7 @@ import imageio
 import numpy as np
 
 # Create an agent
-agent = OpenAiAgent(model='gpt-4')
+agent = OpenAiAgent(model='gpt-3.5-turbo')
 
 def export_to_gif(frames: list[np.ndarray], output_gif_path: str = None) -> str:
     if output_gif_path is None:
@@ -55,8 +55,7 @@ def play_audio(audio):
 
 def run_agent(prompt) -> dict:
     output = agent.run(prompt)
-    # print(output)
-    print(type(output))
+    torch.cuda.empty_cache()
     output_type = infer_output_type(output)
     if output_type == 'text':
         print(output)
@@ -75,8 +74,7 @@ def run_agent(prompt) -> dict:
     
 def chat_agent(prompt) -> dict:
     output = agent.chat(prompt)
-    # print(output)
-    print(type(output))
+    torch.cuda.empty_cache()
     output_type = infer_output_type(output)
     if output_type == 'text':
         print(output)

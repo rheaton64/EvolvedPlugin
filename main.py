@@ -2,7 +2,7 @@ import os
 import quart
 import quart_cors
 from quart import request
-from hfta import run_agent
+from hfta import run_agent, chat_agent
 from dotenv import load_dotenv
 import cloudinary
 import cloudinary.uploader
@@ -10,6 +10,12 @@ import requests
 import argparse
 
 load_dotenv()
+cloudinary.config(
+    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.getenv('CLOUDINARY_API_KEY'),
+    api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+    secure = True
+)
 app = quart_cors.cors(quart.Quart(__name__), allow_origin="https://chat.openai.com")
 
 def upload_file(file_path, is_direct_link=False):
@@ -39,7 +45,7 @@ async def agents_hfta():
     global is_direct_link
     request_data = await quart.request.get_json(force=True)
     prompt = request_data["prompt"]
-    res = run_agent(prompt)
+    res = chat_agent(prompt)
     if res['output_type'] == 'text':
         return quart.Response(response=res['output'], status=200)
     elif res['output_type'] in ['image', 'video', 'audio']:
